@@ -103,9 +103,9 @@ async def on_output(output: str):
 
     elapsed_time_seconds = (datetime.now() - BotTimes.task_start).seconds
 
-    if elapsed_time_seconds >= 270 and not Aria2c.link_info:
+    if elapsed_time_seconds >= 120 and not Aria2c.link_info:
         logging.error("Failed to get download information ! Probably dead link 💀")
-    return 
+    break
     # Only Do this if got Information
     if total_size != "0B":
         # Calculate download speed
