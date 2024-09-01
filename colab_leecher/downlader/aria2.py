@@ -105,7 +105,7 @@ async def on_output(output: str):
 
     if elapsed_time_seconds >= 120 and not Aria2c.link_info:
         logging.error("Failed to get download information ! Probably dead link 💀")
-    break
+        break
     # Only Do this if got Information
     if total_size != "0B":
         # Calculate download speed
