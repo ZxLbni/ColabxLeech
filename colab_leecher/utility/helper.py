@@ -379,7 +379,7 @@ async def send_settings(client, message, msg_id, command: bool):
 async def status_bar(down_msg, speed, percentage, eta, done, left, engine):
     bar_length = 12
     filled_length = int(percentage / 100 * bar_length)
-    bar = "█" * filled_length + "░" * (bar_length - filled_length)
+    bar = "⬢" * filled_length + "⬡" * (bar_length - filled_length)
     text = (
         f"\n╭「{bar}」 **»** __{percentage:.2f}%__\n├⚡️ **Speed »** __{speed}__\n├⚙️ **Engine »** __{engine}__"
         + f"\n├⏳ **Time Left »** __{eta}__"
