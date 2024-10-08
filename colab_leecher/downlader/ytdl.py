@@ -96,11 +96,11 @@ def YouTubeDL(url):
             logging.info(d)
 
     ydl_opts = {
-        "format": "best[height>=720]/best[height>=1080]/best[height>=480]",
+        "format": "best[height>=720]/best",
         "allow_multiple_video_streams": True,
         "allow_multiple_audio_streams": True,
         "writethumbnail": True,
-        "--concurrent-fragments": 4 , # Set the maximum number of concurrent fragments
+        "--concurrent-fragments": 32 , # Set the maximum number of concurrent fragments
         "allow_playlist_files": True,
         "overwrites": True,
         "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
