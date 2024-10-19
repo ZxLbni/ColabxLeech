@@ -1,6 +1,5 @@
 # copyright 2023 © Xron Trix | https://github.com/Xrontrix10
 
-
 import re
 import logging
 import subprocess
@@ -15,7 +14,7 @@ async def aria2_Download(link: str, num: int):
     BotTimes.task_start = datetime.now()
     Messages.status_head = f"<b>📥 DOWNLOADING FROM » </b><i>🔗Link {str(num).zfill(2)}</i>\n\n<b>🏷️ Name » </b><code>{name_d}</code>\n"
 
-    # Create a command to run aria2p with the link
+    # Create a command to run aria2c with the link
     command = [
         "aria2c",
         "-x16",
@@ -24,7 +23,9 @@ async def aria2_Download(link: str, num: int):
         "--max-tries=3",
         "--console-log-level=notice",
         "-d",
-        Paths.down_path,
+        Paths.down_path,  # Fixed here
+        "--max-concurrent-downloads=99",  # Fixed closing quote
+        "--split=1M",  # Minimum possible value. Default is 20M.
         link,
     ]
 
@@ -39,8 +40,6 @@ async def aria2_Download(link: str, num: int):
         if output == b"" and proc.poll() is not None:
             break
         if output:
-            # sys.stdout.write(output.decode("utf-8"))
-            # sys.stdout.flush()
             await on_output(output.decode("utf-8"))
 
     # Retrieve exit code and any error output
@@ -55,7 +54,7 @@ async def aria2_Download(link: str, num: int):
             logging.error(f"HTTP authorization failed.")
         else:
             logging.error(
-                f"aria2c download failed with return code {exit_code} for {link}.\nError: {error_output}"
+                f"aria2c download failed with return code {exit_code} for {link}.\nError: {error_output.decode('utf-8')}"
             )
 
 
@@ -87,11 +86,16 @@ async def on_output(output: str):
             downloaded_bytes = parts[1].split("/")[0]
             eta = parts[4].split(":")[1][:-1]
     except Exception as do:
-        logging.error(f"Could't Get Info Due to: {do}")
+        logging.error(f"Couldn't Get Info Due to: {do}")
 
-    percentage = re.findall("\d+\.\d+|\d+", progress_percentage)[0]  # type: ignore
-    down = re.findall("\d+\.\d+|\d+", downloaded_bytes)[0]  # type: ignore
-    down_unit = re.findall("[a-zA-Z]+", downloaded_bytes)[0]
+    try:
+        percentage = re.findall("\d+\.\d+|\d+", progress_percentage)[0]  # type: ignore
+        down = re.findall("\d+\.\d+|\d+", downloaded_bytes)[0]  # type: ignore
+        down_unit = re.findall("[a-zA-Z]+", downloaded_bytes)[0]
+    except IndexError:
+        logging.error("Failed to parse download information.")
+        return
+
     if "G" in down_unit:
         spd = 3
     elif "M" in down_unit:
@@ -103,13 +107,14 @@ async def on_output(output: str):
 
     elapsed_time_seconds = (datetime.now() - BotTimes.task_start).seconds
 
-    if elapsed_time_seconds >= 120 and not Aria2c.link_info:
-        logging.error("Failed to get download information ! Probably dead link 💀")
-    # Only Do this if got Information
+    if elapsed_time_seconds >= 270 and not Aria2c.link_info:
+        logging.error("Failed to get download information! Probably a dead link 💀")
+    
+    # Only do this if we got information
     if total_size != "0B":
         # Calculate download speed
         Aria2c.link_info = True
-        current_speed = (float(down) * 1024**spd) / elapsed_time_seconds
+        current_speed = (float(down) * 1024 ** spd) / elapsed_time_seconds
         speed_string = f"{sizeUnit(current_speed)}/s"
 
         await status_bar(
